@@ -1782,35 +1782,62 @@ WORD32 isvcd_nal_parse_vcl_nal_partial(void *pv_nal_parse_ctxt, UWORD8 *pu1_stre
     /* on the prefix NAL unit, the current picture's prefix   */
     /* NAL unit will be at the bottom of the buffer. Hence    */
     /* it should be copied to top of the buffer               */
-    if(SVCD_TRUE == ps_nal_parse_ctxt->i4_is_frst_vcl_nal_in_au)
+    if(ps_nal_parse_ctxt->u1_aud_detector_header_flag == 0)
     {
-        nal_buf_t *ps_prefix_nal_buf;
-
-        ps_prefix_nal_buf = &ps_nal_parse_ctxt->s_prefix_nal_buf;
-        if(SVCD_TRUE == ps_prefix_nal_buf->i4_valid_flag)
+        if(SVCD_TRUE == ps_nal_parse_ctxt->i4_is_frst_vcl_nal_in_au)
         {
-            WORD32 i4_buf_size;
-            UWORD8 *pu1_vcl_nal;
+            nal_buf_t *ps_prefix_nal_buf;
 
-            if(ps_prefix_nal_buf->i4_buf_size > 0)
+            ps_prefix_nal_buf = &ps_nal_parse_ctxt->s_prefix_nal_buf;
+            if(SVCD_TRUE == ps_prefix_nal_buf->i4_valid_flag)
             {
-                i4_buf_size = ps_prefix_nal_buf->i4_buf_size;
-                i4_buf_size = UP_ALIGN_8(i4_buf_size + BUFFER_ALIGN_4);
+                WORD32 i4_buf_size;
+                UWORD8 *pu1_vcl_nal;
+
+                if(ps_prefix_nal_buf->i4_buf_size > 0)
+                {
+                    i4_buf_size = ps_prefix_nal_buf->i4_buf_size;
+                    i4_buf_size = UP_ALIGN_8(i4_buf_size + BUFFER_ALIGN_4);
+                }
+                else
+                {
+                    i4_buf_size = 0;
+                }
+
+                pu1_vcl_nal = ps_nal_parse_ctxt->pu1_vcl_nal_buf + i4_buf_size;
+
+                memmove(ps_nal_parse_ctxt->pu1_vcl_nal_buf, ps_prefix_nal_buf->pu1_buf, i4_buf_size);
+                ps_prefix_nal_buf->pu1_buf = ps_nal_parse_ctxt->pu1_vcl_nal_buf;
+                ps_nal_parse_ctxt->pu1_vcl_nal_buf = pu1_vcl_nal;
+
+                /* subtract the buffer size left */
+                ps_nal_parse_ctxt->u4_bytes_left_vcl -= i4_buf_size;
             }
-            else
-            {
-                i4_buf_size = 0;
-            }
-
-            pu1_vcl_nal = ps_nal_parse_ctxt->pu1_vcl_nal_buf + i4_buf_size;
-
-            memmove(ps_nal_parse_ctxt->pu1_vcl_nal_buf, ps_prefix_nal_buf->pu1_buf, i4_buf_size);
-            ps_prefix_nal_buf->pu1_buf = ps_nal_parse_ctxt->pu1_vcl_nal_buf;
-            ps_nal_parse_ctxt->pu1_vcl_nal_buf = pu1_vcl_nal;
-
-            /* subtract the buffer size left */
-            ps_nal_parse_ctxt->u4_bytes_left_vcl -= i4_buf_size;
+            /* Reset the top and bottom node */
+            ps_vcl_nal->ps_top_node = NULL;
+            ps_vcl_nal->ps_bot_node = NULL;
+            ps_vcl_nal->i1_nal_ref_id_next = -1;
+            ps_vcl_nal->u2_frm_num_next = 0;
         }
+    }
+    else
+    {
+        WORD32 i4_status;
+
+        i4_status =
+            isvcd_get_first_start_code(pu1_stream_buffer, pu4_bytes_consumed, pu4_num_bytes);
+
+        /*-------------------------------------------------------------------*/
+        /* If start code found then proceed with bitstream extraction        */
+        /*-------------------------------------------------------------------*/
+
+        if(i4_status == SC_NOT_FOUND)
+        {
+            return (VCL_NAL_FOUND_FALSE);
+        }
+
+        i4_cur_pos = *pu4_bytes_consumed;
+
         /* Reset the top and bottom node */
         ps_vcl_nal->ps_top_node = NULL;
         ps_vcl_nal->ps_bot_node = NULL;
@@ -1982,30 +2009,33 @@ WORD32 isvcd_nal_parse_vcl_nal_partial(void *pv_nal_parse_ctxt, UWORD8 *pu1_stre
                     break;
                 }
             }
-            /* Perform the picture boundary detetction if all the  */
-            /* following conditions are TRUE                       */
-            /*  1. VCL NAL                                         */
-            /*  2. Not a prefix NAL                                */
-            /*  3. Not a discardable NAL                           */
-            if((VCL_NAL == ps_nal_prms->i4_derived_nal_type) &&
-               (PREFIX_UNIT_NAL != ps_nal_prms->i4_nal_unit_type) &&
-               (SVCD_FALSE == ps_nal_parse_ctxt->i4_discard_nal_flag))
+            else
             {
-                if(ANNEX_B == ps_nal_parse_ctxt->i4_input_bitstream_mode)
+                /* Perform the picture boundary detetction if all the  */
+                /* following conditions are TRUE                       */
+                /*  1. VCL NAL                                         */
+                /*  2. Not a prefix NAL                                */
+                /*  3. Not a discardable NAL                           */
+                if((VCL_NAL == ps_nal_prms->i4_derived_nal_type) &&
+                   (PREFIX_UNIT_NAL != ps_nal_prms->i4_nal_unit_type) &&
+                   (SVCD_FALSE == ps_nal_parse_ctxt->i4_discard_nal_flag))
                 {
-                    ps_nal_parse_ctxt->u1_pic_boundary_aud_flag = 0;
+                    if(ANNEX_B == ps_nal_parse_ctxt->i4_input_bitstream_mode)
+                    {
+                        ps_nal_parse_ctxt->u1_pic_boundary_aud_flag = 0;
 
-                    i4_status = isvcd_detect_pic_boundary_annex_b(ps_nal_prms, pu1_stream_buffer,
-                                                                  i4_cur_pos, &i4_pic_bound_status,
-                                                                  ps_nal_parse_ctxt, pu4_num_bytes);
-                }
+                        i4_status = isvcd_detect_pic_boundary_annex_b(ps_nal_prms, pu1_stream_buffer,
+                                                                      i4_cur_pos, &i4_pic_bound_status,
+                                                                      ps_nal_parse_ctxt, pu4_num_bytes);
+                    }
 
-                /* If picture boundary is detected then come out of  */
-                /* the loop                                          */
-                if(PIC_BOUNDARY_TRUE == i4_pic_bound_status)
-                {
-                    isvcd_nal_parse_pic_bound_proc(ps_nal_parse_ctxt, ps_vcl_nal, ps_nal_prms);
-                    break;
+                    /* If picture boundary is detected then come out of  */
+                    /* the loop                                          */
+                    if(PIC_BOUNDARY_TRUE == i4_pic_bound_status)
+                    {
+                        isvcd_nal_parse_pic_bound_proc(ps_nal_parse_ctxt, ps_vcl_nal, ps_nal_prms);
+                        break;
+                    }
                 }
             }
 
@@ -2414,6 +2444,12 @@ WORD32 isvcd_nal_parse_non_vcl_nal(void *pv_nal_parse_ctxt, UWORD8 *pu1_stream_b
                (SVCD_TRUE == ps_nal_parse_ctxt->i4_discard_nal_flag))
             {
                 isvcd_nal_buf_reset(&ps_nal_parse_ctxt->s_prefix_nal_buf);
+            }
+
+            if(ACCESS_UNIT_DELIMITER_RBSP == ps_nal_prms->i4_nal_unit_type)
+            {
+                ps_nal_parse_ctxt->u1_aud_detector_header_flag = 1;
+                i4_more_data_flag = SVCD_FALSE;
             }
 
             /* Reset NAL level tracking variables */

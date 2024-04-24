@@ -1753,6 +1753,8 @@ WORD32 isvcd_nal_parse_ctxt_create(svc_dec_ctxt_t *ps_svcd_ctxt, void *pv_api_ip
     ps_nal_parse_ctxt->pv_non_vcl_nal_buf = (UWORD8 *) ps_svcd_ctxt->pv_non_vcl_nal_buff;
     isvcd_nal_parse_reset_ctxt(ANNEX_B, PARTIAL_INPUT_MODE, ps_nal_parse_ctxt);
 
+    ps_nal_parse_ctxt->u1_aud_detector_header_flag = 0;
+
     return IV_SUCCESS;
 }
 
@@ -4590,6 +4592,7 @@ WORD32 isvcd_pre_parse_refine_au(svc_dec_ctxt_t *ps_svcd_ctxt, ivd_video_decode_
     /* If sequence header is not decoded then decode  the seq  */
     /* uence header                                            */
 
+    //ps_dec->i4_header_decoded = 0;
     if(SVCD_FALSE == ps_dec->i4_header_decoded)
     {
         i4_status = isvcd_seq_hdr_dec(ps_svcd_ctxt, ps_in_bufs, &u4_bytes_consumed);

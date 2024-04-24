@@ -2488,7 +2488,21 @@ int main(WORD32 argc, CHAR *argv[])
                 *(pu1_bs_buf + numbytes) = 0x10;
                 numbytes++;
 
-                u4_bytes_remaining += 6;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x01;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x0C;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0xFF;
+                numbytes++;
+
+                u4_bytes_remaining += 12;
+
             }
 
             if(0 == u4_bytes_remaining)
@@ -2910,10 +2924,13 @@ int main(WORD32 argc, CHAR *argv[])
             {
                 WORD32 entries;
                 entries = fscanf(ps_piclen_file, "%d\n", &numbytes);
-                if(1 != entries) numbytes = u4_ip_buf_len;
+                if(1 != entries) numbytes = 0;
             }
 
-            u4_bytes_remaining = (WORD32) fread(pu1_bs_buf, sizeof(UWORD8), numbytes, ps_ip_file);
+            if (numbytes > 0)
+                u4_bytes_remaining = (WORD32) fread(pu1_bs_buf, sizeof(UWORD8), numbytes, ps_ip_file);
+            else
+                u4_bytes_remaining = 0;
 
             // AUD_PIC_BOUNDARY
             if((1 == s_app_ctx.u4_piclen_flag) && (u4_bytes_remaining > 0))
@@ -2931,7 +2948,20 @@ int main(WORD32 argc, CHAR *argv[])
                 *(pu1_bs_buf + numbytes) = 0x10;
                 numbytes++;
 
-                u4_bytes_remaining += 6;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x00;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x01;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0x0C;
+                numbytes++;
+                *(pu1_bs_buf + numbytes) = 0xFF;
+                numbytes++;
+
+                u4_bytes_remaining += 12;
             }
 
             if(u4_bytes_remaining == 0)
@@ -2948,7 +2978,11 @@ int main(WORD32 argc, CHAR *argv[])
                     {
                         WORD32 entries;
                         entries = fscanf(ps_piclen_file, "%d\n", &numbytes);
-                        if(1 != entries) numbytes = u4_ip_buf_len;
+                        if(1 != entries) 
+                        {
+                            numbytes = 0;
+                            break;
+                        }
                     }
 
                     u4_bytes_remaining =

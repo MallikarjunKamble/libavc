@@ -358,6 +358,7 @@ typedef struct
                     previous call because of insufficient bitstream
                     to decode the slice and NAL header. */
     UWORD8 u1_pic_boundary_aud_flag;
+    UWORD8 u1_aud_detector_header_flag;
 } nal_parse_ctxt_t;
 
 /*****************************************************************************/
