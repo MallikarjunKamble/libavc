@@ -308,7 +308,7 @@ WORD32 isvcd_get_first_start_code(UWORD8 *pu1_stream_buffer, UWORD32 *pu4_bytes_
 WORD32 isvcd_get_annex_b_nal_unit(UWORD8 *pu1_buf_start, WORD32 i4_cur_pos, WORD32 i4_max_num_bytes,
                                   WORD32 *pi4_state, WORD32 *pi4_zero_byte_cnt,
                                   UWORD32 *pu4_bytes_consumed, void *pv_nal_unit,
-                                  WORD32 *pi4_more_data_flag)
+                                  WORD32 *pi4_more_data_flag, WORD32 flags)
 {
     nal_unit_t *ps_nal_unit = (nal_unit_t *) pv_nal_unit;
     WORD32 i4_status, i4_nal_start_flag = SVCD_FALSE;
@@ -368,6 +368,11 @@ WORD32 isvcd_get_annex_b_nal_unit(UWORD8 *pu1_buf_start, WORD32 i4_cur_pos, WORD
         /*-------------------------------------------------------------------*/
         ps_nal_unit->i4_buf_sizes = *pu4_bytes_consumed;
         *pi4_more_data_flag = SVCD_FALSE;
+
+        if (flags && ((i4_max_num_bytes - i4_cur_pos) == *pu4_bytes_consumed))
+        {
+            i4_nal_start_flag = SVCD_FALSE;
+        }
 
         return (i4_nal_start_flag);
     }

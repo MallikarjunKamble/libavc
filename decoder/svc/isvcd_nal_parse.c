@@ -1852,7 +1852,7 @@ WORD32 isvcd_nal_parse_vcl_nal_partial(void *pv_nal_parse_ctxt, UWORD8 *pu1_stre
             i4_nal_start_flag = isvcd_get_annex_b_nal_unit(
                 pu1_stream_buffer, i4_cur_pos, *pu4_num_bytes,
                 &ps_nal_parse_ctxt->i4_find_nal_state, &ps_nal_parse_ctxt->i4_zero_byte_cnt,
-                &u4_bytes_consumed_temp, ps_nal_parse_ctxt->pv_nal_unit, &i4_more_data_flag);
+                &u4_bytes_consumed_temp, ps_nal_parse_ctxt->pv_nal_unit, &i4_more_data_flag, 0);
 
             i4_cur_pos += u4_bytes_consumed_temp;
         }
@@ -2264,7 +2264,7 @@ WORD32 isvcd_nal_parse_non_vcl_nal(void *pv_nal_parse_ctxt, UWORD8 *pu1_stream_b
             i4_nal_start_flag = isvcd_get_annex_b_nal_unit(
                 pu1_stream_buffer, i4_cur_pos, *pu4_num_bytes,
                 &ps_nal_parse_ctxt->i4_find_nal_state, &ps_nal_parse_ctxt->i4_zero_byte_cnt,
-                &u4_bytes_consumed_temp, ps_nal_parse_ctxt->pv_nal_unit, &i4_more_data_flag);
+                &u4_bytes_consumed_temp, ps_nal_parse_ctxt->pv_nal_unit, &i4_more_data_flag, 1);
 
             i4_cur_pos += u4_bytes_consumed_temp;
         }

@@ -191,7 +191,7 @@ WORD32 isvcd_nal_find_start_code(UWORD8 *pu1_buf_start, WORD32 i4_cur_pos, WORD3
 WORD32 isvcd_get_annex_b_nal_unit(UWORD8 *pu1_buf_start, WORD32 i4_cur_pos, WORD32 i4_max_num_bytes,
                                   WORD32 *pi4_state, WORD32 *pi4_zero_byte_cnt,
                                   UWORD32 *pu4_bytes_consumed, void *pv_nal_unit,
-                                  WORD32 *pi4_more_data_flag);
+                                  WORD32 *pi4_more_data_flag, WORD32 flags);
 
 void isvcd_reset_emulation_ctxt(void *pv_emulation_ctxt);
 
