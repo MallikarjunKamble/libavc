@@ -2820,7 +2820,14 @@ WORD32 isvcd_mark_err_slice_skip(svc_dec_lyr_struct_t *ps_svc_lyr_dec, WORD32 nu
                 }
                 else
                 {
-                    ps_cur_mb_info = ps_dec->ps_nmb_info + ps_dec->u4_num_mbs_prev_nmb - 1;
+                    if(ps_dec->u4_num_mbs_prev_nmb != 0)
+                    {
+                        ps_cur_mb_info = ps_dec->ps_nmb_info + ps_dec->u4_num_mbs_prev_nmb - 1;
+                    }
+                    else
+                    {
+                        ps_cur_mb_info = ps_dec->ps_nmb_info;
+                    }
                 }
             }
 

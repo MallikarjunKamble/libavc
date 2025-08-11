@@ -1410,9 +1410,6 @@ WORD32 isvcd_decode_recon_tfr_nmb_non_base_lyr(svc_dec_lyr_struct_t *ps_svc_lyr_
 
         ps_cur_mb_info = ps_dec->ps_nmb_info + u1_mb_idx;
 
-        ps_dec->u4_deblk_mb_x = ps_cur_mb_info->u2_mbx;
-        ps_dec->u4_deblk_mb_y = ps_cur_mb_info->u2_mby;
-
         for(j = u1_mb_idx; j < i; j++)
         {
             if(ps_dec->u4_cur_deblk_mb_num > ps_dec->ps_cur_sps->u4_max_mb_addr)
@@ -1542,9 +1539,6 @@ WORD32 isvcd_decode_recon_tfr_nmb_base_lyr(svc_dec_lyr_struct_t *ps_svc_lyr_dec,
         u4_wd_uv = ps_dec->u2_frm_wd_uv << u1_field_pic_flag;
 
         ps_cur_mb_info = ps_dec->ps_nmb_info + u1_mb_idx;
-
-        ps_dec->u4_deblk_mb_x = ps_cur_mb_info->u2_mbx;
-        ps_dec->u4_deblk_mb_y = ps_cur_mb_info->u2_mby;
 
         for(j = u1_mb_idx; j < u1_num_mbs; j++)
         {

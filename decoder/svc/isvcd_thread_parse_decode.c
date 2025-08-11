@@ -333,9 +333,6 @@ WORD32 isvcd_decode_recon_tfr_nmb_thread(svc_dec_lyr_struct_t *ps_svc_lyr_dec, U
 
         ps_cur_mb_info = &ps_dec->ps_frm_mb_info[ps_dec->u4_cur_deblk_mb_num];
 
-        ps_dec->u4_deblk_mb_x = ps_cur_mb_info->u2_mbx;
-        ps_dec->u4_deblk_mb_y = ps_cur_mb_info->u2_mby;
-
         for(j = 0; j < i; j++)
         {
             ih264d_deblock_mb_nonmbaff(ps_dec, ps_tfr_cxt, i4_cb_qp_idx_ofst, i4_cr_qp_idx_ofst,
